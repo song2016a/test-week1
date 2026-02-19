@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const generateBtn = document.getElementById('generate-btn');
     const themeToggleBtn = document.getElementById('theme-toggle-btn');
     const lottoSetsContainer = document.getElementById('lotto-generator-sets');
-    const analysisResultsEl = document.getElementById('analysis-results');
     const saveBtn = document.getElementById('save-btn');
     const checkWinBtn = document.getElementById('check-win-btn');
     const savedSetsDisplay = document.getElementById('saved-sets-display');
@@ -125,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- GENERATION & ANALYSIS ---
+    // --- GENERATION ---
 
     function generateLottoSet(include, exclude) {
         const numbers = new Set(include);
@@ -158,48 +157,7 @@ document.addEventListener('DOMContentLoaded', () => {
             lottoSetsContainer.appendChild(setContainer);
         }
         
-        analyzeAndDisplaySets(generatedSets);
         saveBtn.disabled = false;
-    }
-
-    function analyzeAndDisplaySets(sets) {
-        analysisResultsEl.innerHTML = '';
-        if (typeof Chart === 'undefined') return; // Chart.js might not be loaded
-        
-        const oddEvenCounts = { odd: 0, even: 0 };
-        const rangeCounts = { '~10': 0, '11~20': 0, '21~30': 0, '31~40': 0, '41~45': 0 };
-
-        sets.flat().forEach(num => {
-            num % 2 === 0 ? oddEvenCounts.even++ : oddEvenCounts.odd++;
-            if (num <= 10) rangeCounts['~10']++;
-            else if (num <= 20) rangeCounts['11~20']++;
-            else if (num <= 30) rangeCounts['21~30']++;
-            else if (num <= 40) rangeCounts['31~40']++;
-            else rangeCounts['41~45']++;
-        });
-
-        const oddEvenCanvas = document.createElement('canvas');
-        const rangeCanvas = document.createElement('canvas');
-        analysisResultsEl.appendChild(oddEvenCanvas);
-        analysisResultsEl.appendChild(rangeCanvas);
-
-        new Chart(oddEvenCanvas, {
-            type: 'pie',
-            data: {
-                labels: ['홀', '짝'],
-                datasets: [{ data: [oddEvenCounts.odd, oddEvenCounts.even], backgroundColor: ['#FF6384', '#36A2EB'] }]
-            },
-            options: { responsive: true, plugins: { title: { display: true, text: '홀/짝 비율' } } }
-        });
-
-        new Chart(rangeCanvas, {
-            type: 'bar',
-            data: {
-                labels: Object.keys(rangeCounts),
-                datasets: [{ label: '개수', data: Object.values(rangeCounts), backgroundColor: ['#fbc400', '#69c8f2', '#ff7272', '#aaa', '#b0d840'] }]
-            },
-            options: { responsive: true, plugins: { title: { display: true, text: '번호대별 분포' }, legend: { display: false } } }
-        });
     }
 
     function handleNumberSelection(event, type) {

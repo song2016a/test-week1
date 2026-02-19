@@ -87,10 +87,7 @@ body.dark-mode .num-btn:hover:not(.selected) { background-color: #444; }
 #check-win-btn { background-color: #17a2b8; }
 button:disabled { background-color: #ccc; cursor: not-allowed; }
 
-/* === Analysis & Stats Charts === */
-.analysis-container h2, .saved-numbers-container h2 { margin-bottom: 1rem; }
-#analysis-results { display: flex; justify-content: space-around; align-items: center; gap: 1rem; }
-#analysis-results canvas { max-width: 100%; max-height: 250px; }
+/* === Stats Chart === */
 .chart-container canvas { max-height: 400px; }
 
 /* === Saved Numbers Section === */
@@ -114,5 +111,4 @@ button:disabled { background-color: #ccc; cursor: not-allowed; }
     .number-selector { gap: 4px; }
     .num-btn { width: 32px; height: 32px; font-size: 0.8rem; }
     .generator-actions, .saved-actions { flex-direction: column; }
-    #analysis-results { flex-direction: column; }
 }
