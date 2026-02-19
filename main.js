@@ -3,6 +3,10 @@ document.getElementById('generate-btn').addEventListener('click', () => {
     displayNumbers(numbers);
 });
 
+document.getElementById('theme-toggle-btn').addEventListener('click', () => {
+    document.body.classList.toggle('dark-mode');
+});
+
 function generateLottoNumbers() {
     const numbers = new Set();
     while (numbers.size < 6) {
