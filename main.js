@@ -1,25 +1,39 @@
+
 document.addEventListener('DOMContentLoaded', () => {
+    // --- Kakao SDK Init ---
+    Kakao.init('263943f3521b5b542038757a3e8d2c43');
+
     // --- DOM Elements ---
+    const drawNumberEl = document.getElementById('draw-number');
+    const countdownEl = document.getElementById('countdown');
+    const lastDrawNumbersEl = document.getElementById('last-draw-numbers');
+    const includeNumbersEl = document.getElementById('include-numbers');
+    const excludeNumbersEl = document.getElementById('exclude-numbers');
     const generateBtn = document.getElementById('generate-btn');
     const themeToggleBtn = document.getElementById('theme-toggle-btn');
-    const countdownEl = document.getElementById('countdown');
-    const drawNumberEl = document.getElementById('draw-number');
-    const lastDrawNumbersEl = document.getElementById('last-draw-numbers');
     const lottoSetsContainer = document.getElementById('lotto-generator-sets');
+    const analysisResultsEl = document.getElementById('analysis-results');
+    const saveBtn = document.getElementById('save-btn');
+    const checkWinBtn = document.getElementById('check-win-btn');
+    const shareKakaoBtn = document.getElementById('share-kakao-btn');
+    const savedSetsDisplay = document.getElementById('saved-sets-display');
+    const statsChartCanvas = document.getElementById('stats-chart');
 
-    // --- Initial Data (Placeholders) ---
-    const lastDrawData = { draw: 1130, numbers: [5, 11, 13, 19, 21, 33], bonus: 45 };
-    const yearlyStats = {
-        1: 15, 2: 10, 3: 18, 4: 12, 5: 20, 6: 14, 7: 17, 8: 9, 9: 13, 10: 16,
-        11: 19, 12: 11, 13: 22, 14: 14, 15: 16, 16: 10, 17: 18, 18: 15, 19: 13, 20: 17,
-        21: 21, 22: 12, 23: 15, 24: 14, 25: 11, 26: 18, 27: 20, 28: 16, 29: 13, 30: 10,
-        31: 17, 32: 15, 33: 19, 34: 22, 35: 14, 36: 11, 37: 13, 38: 16, 39: 18, 40: 12,
-        41: 15, 42: 17, 43: 20, 44: 14, 45: 9
+    // --- Global State ---
+    let generatedSets = [];
+    let savedSets = JSON.parse(localStorage.getItem('lottoSets')) || [];
+    let lastDrawData = { draw: 1130, numbers: [5, 11, 13, 19, 21, 33], bonus: 45 }; // Placeholder
+
+    // --- LOTTERY DATA & LOGIC ---
+
+    const getLottoColor = (num) => {
+        if (num <= 10) return '#fbc400'; // 노랑
+        if (num <= 20) return '#69c8f2'; // 파랑
+        if (num <= 30) return '#ff7272'; // 빨강
+        if (num <= 40) return '#aaa';    // 회색
+        return '#b0d840';               // 녹색
     };
 
-    // --- Functions ---
-
-    // Calculate current lotto draw number
     function getCurrentDrawNumber() {
         const genesisDraw = { number: 1, date: new Date('2002-12-07T21:00:00') };
         const now = new Date();
@@ -27,13 +41,17 @@ document.addEventListener('DOMContentLoaded', () => {
         return genesisDraw.number + weeksSince;
     }
 
-    // Update countdown timer
     function updateCountdown() {
         const now = new Date();
         const nextDrawDate = new Date(now);
-        // Find next Saturday 8:45 PM KST
-        nextDrawDate.setDate(now.getDate() + (6 - now.getDay() + 7) % 7);
+        const dayOfWeek = now.getDay(); // 0=Sun, 6=Sat
+        const daysUntilSaturday = (6 - dayOfWeek + 7) % 7;
+        nextDrawDate.setDate(now.getDate() + daysUntilSaturday);
         nextDrawDate.setHours(20, 45, 0, 0);
+
+        if (now > nextDrawDate) {
+            nextDrawDate.setDate(nextDrawDate.getDate() + 7);
+        }
 
         const diff = nextDrawDate - now;
         const d = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -41,106 +59,276 @@ document.addEventListener('DOMContentLoaded', () => {
         const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
         const s = Math.floor((diff % (1000 * 60)) / 1000);
 
-        countdownEl.innerHTML = `${d}d ${h}h ${m}m ${s}s`;
+        countdownEl.innerHTML = `${d}일 ${h}시간 ${m}분 ${s}초`;
     }
+    
+    // --- UI RENDERING ---
 
-    // Generate a single set of lotto numbers
-    function generateLottoSet() {
-        const numbers = new Set();
-        while (numbers.size < 6) {
-            numbers.add(Math.floor(Math.random() * 45) + 1);
+    function createNumberSelector(container) {
+        for (let i = 1; i <= 45; i++) {
+            const numBtn = document.createElement('button');
+            numBtn.textContent = i;
+            numBtn.classList.add('num-btn');
+            numBtn.dataset.number = i;
+            numBtn.addEventListener('click', () => {
+                numBtn.classList.toggle('selected');
+                validateSelections();
+            });
+            container.appendChild(numBtn);
         }
-        return Array.from(numbers).sort((a, b) => a - b);
     }
 
-    // Create and display a lotto ball element
     function createLottoBall(number) {
         const ball = document.createElement('div');
         ball.classList.add('lotto-ball');
         ball.textContent = number;
-        // Add color based on number range for visual distinction
-        if (number <= 10) ball.style.backgroundColor = '#fbc400';
-        else if (number <= 20) ball.style.backgroundColor = '#69c8f2';
-        else if (number <= 30) ball.style.backgroundColor = '#ff7272';
-        else if (number <= 40) ball.style.backgroundColor = '#aaa';
-        else ball.style.backgroundColor = '#b0d840';
+        ball.style.backgroundColor = getLottoColor(number);
         return ball;
     }
 
-    // Display winning numbers
-    function displayWinningNumbers(container, numbers) {
+    function displayNumbers(container, numbers) {
         container.innerHTML = '';
-        numbers.forEach(num => {
-            container.appendChild(createLottoBall(num));
+        numbers.forEach(num => container.appendChild(createLottoBall(num)));
+    }
+    
+    function renderSavedSets() {
+        savedSetsDisplay.innerHTML = '';
+        if (savedSets.length === 0) {
+            savedSetsDisplay.innerHTML = '<p>생성한 번호를 저장하고 다음 추첨일에 당첨 결과를 확인하세요!</p>';
+            return;
+        }
+        savedSets.forEach((set, index) => {
+            const setContainer = document.createElement('div');
+            setContainer.classList.add('saved-set');
+            
+            const numbersDiv = document.createElement('div');
+            numbersDiv.classList.add('lotto-numbers');
+            displayNumbers(numbersDiv, set.numbers);
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = '삭제';
+            deleteBtn.classList.add('delete-set-btn');
+            deleteBtn.addEventListener('click', () => {
+                savedSets.splice(index, 1);
+                localStorage.setItem('lottoSets', JSON.stringify(savedSets));
+                renderSavedSets();
+            });
+            
+            setContainer.appendChild(numbersDiv);
+            setContainer.appendChild(deleteBtn);
+            savedSetsDisplay.appendChild(setContainer);
         });
     }
 
-    // Generate and display 5 sets of numbers
-    function generateAndDisplaySets() {
-        lottoSetsContainer.innerHTML = '';
-        for (let i = 0; i < 5; i++) {
-            const set = generateLottoSet();
-            const setContainer = document.createElement('div');
-            setContainer.classList.add('lotto-numbers', 'lotto-set');
-            displayWinningNumbers(setContainer, set);
-            lottoSetsContainer.appendChild(setContainer);
+    // --- GENERATION & ANALYSIS ---
+
+    function generateLottoSet(include, exclude) {
+        const numbers = new Set(include);
+        const availableNumbers = Array.from({ length: 45 }, (_, i) => i + 1)
+            .filter(n => !include.includes(n) && !exclude.includes(n));
+            
+        while (numbers.size < 6) {
+            if (availableNumbers.length === 0) break; 
+            const randomIndex = Math.floor(Math.random() * availableNumbers.length);
+            const chosen = availableNumbers.splice(randomIndex, 1)[0];
+            numbers.add(chosen);
         }
+        return Array.from(numbers).sort((a, b) => a - b);
     }
     
-    // Create statistics chart
-    function createStatsChart() {
-        const ctx = document.getElementById('stats-chart').getContext('2d');
+    function handleGenerate() {
+        const include = Array.from(includeNumbersEl.querySelectorAll('.selected')).map(btn => parseInt(btn.dataset.number));
+        const exclude = Array.from(excludeNumbersEl.querySelectorAll('.selected')).map(btn => parseInt(btn.dataset.number));
+
+        generatedSets = [];
+        lottoSetsContainer.innerHTML = '';
+        
+        for (let i = 0; i < 5; i++) {
+            const set = generateLottoSet(include, exclude);
+            generatedSets.push(set);
+            
+            const setContainer = document.createElement('div');
+            setContainer.classList.add('lotto-numbers', 'lotto-set');
+            displayNumbers(setContainer, set);
+            lottoSetsContainer.appendChild(setContainer);
+        }
+        
+        analyzeAndDisplaySets(generatedSets);
+        saveBtn.disabled = false;
+    }
+
+    function analyzeAndDisplaySets(sets) {
+        analysisResultsEl.innerHTML = '';
+        
+        const oddEvenCounts = { odd: 0, even: 0 };
+        const rangeCounts = { '~10': 0, '11~20': 0, '21~30': 0, '31~40': 0, '41~45': 0 };
+
+        sets.flat().forEach(num => {
+            num % 2 === 0 ? oddEvenCounts.even++ : oddEvenCounts.odd++;
+            if (num <= 10) rangeCounts['~10']++;
+            else if (num <= 20) rangeCounts['11~20']++;
+            else if (num <= 30) rangeCounts['21~30']++;
+            else if (num <= 40) rangeCounts['31~40']++;
+            else rangeCounts['41~45']++;
+        });
+
+        const oddEvenCanvas = document.createElement('canvas');
+        const rangeCanvas = document.createElement('canvas');
+        analysisResultsEl.appendChild(oddEvenCanvas);
+        analysisResultsEl.appendChild(rangeCanvas);
+
+        new Chart(oddEvenCanvas, {
+            type: 'pie',
+            data: {
+                labels: ['홀', '짝'],
+                datasets: [{ data: [oddEvenCounts.odd, oddEvenCounts.even], backgroundColor: ['#FF6384', '#36A2EB'] }]
+            },
+            options: { responsive: true, plugins: { title: { display: true, text: '홀/짝 비율' } } }
+        });
+
+        new Chart(rangeCanvas, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(rangeCounts),
+                datasets: [{ label: '개수', data: Object.values(rangeCounts), backgroundColor: ['#fbc400', '#69c8f2', '#ff7272', '#aaa', '#b0d840'] }]
+            },
+            options: { responsive: true, plugins: { title: { display: true, text: '번호대별 분포' }, legend: { display: false } } }
+        });
+    }
+
+    function validateSelections() {
+        const includeCount = includeNumbersEl.querySelectorAll('.selected').length;
+        if (includeCount > 5) {
+            alert('고정수는 5개까지만 선택할 수 있습니다.');
+            event.target.classList.remove('selected');
+        }
+        // Allow selecting the same number in both include and exclude, generate logic will handle it.
+    }
+
+    // --- ACTIONS ---
+
+    function saveGeneratedSets() {
+        if (generatedSets.length === 0) {
+            alert('먼저 번호를 생성해주세요.');
+            return;
+        }
+        savedSets.push(...generatedSets.map(set => ({ numbers: set })));
+        localStorage.setItem('lottoSets', JSON.stringify(savedSets));
+        renderSavedSets();
+        alert('번호가 보관함에 저장되었습니다.');
+    }
+
+    function checkWinnings() {
+        if (savedSets.length === 0) {
+            alert('먼저 번호를 저장해주세요.');
+            return;
+        }
+        
+        const winningNumbers = lastDrawData.numbers;
+        const bonusNumber = lastDrawData.bonus;
+
+        savedSetsDisplay.querySelectorAll('.saved-set').forEach((setContainer, index) => {
+            const numbers = savedSets[index].numbers;
+            const matchCount = numbers.filter(num => winningNumbers.includes(num)).length;
+            const bonusMatch = numbers.includes(bonusNumber);
+            
+            let rank = '낙첨';
+            if (matchCount === 6) rank = '1등';
+            else if (matchCount === 5 && bonusMatch) rank = '2등';
+            else if (matchCount === 5) rank = '3등';
+            else if (matchCount === 4) rank = '4등';
+            else if (matchCount === 3) rank = '5등';
+
+            const resultEl = document.createElement('p');
+            resultEl.classList.add('win-result');
+            resultEl.textContent = `결과: ${rank}`;
+            if(rank !== '낙첨') resultEl.style.color = 'red';
+            
+            // Remove old result if exists
+            const oldResult = setContainer.querySelector('.win-result');
+            if(oldResult) oldResult.remove();
+            
+            setContainer.appendChild(resultEl);
+        });
+    }
+    
+    function shareToKakao() {
+        if (generatedSets.length === 0) {
+            alert('먼저 번호를 생성해주세요.');
+            return;
+        }
+
+        const setsText = generatedSets.map((set, i) => `[${i+1}게임] ${set.join(', ')}`).join('
+');
+        
+        Kakao.Share.sendDefault({
+            objectType: 'text',
+            text: `이번 주 나의 행운 번호🍀
+
+${setsText}
+
+당신도 로또 럭에서 행운을 시험해보세요!`,
+            link: {
+                mobileWebUrl: window.location.href,
+                webUrl: window.location.href,
+            },
+        });
+    }
+    
+    // --- MAIN STATS CHART ---
+    const yearlyStats = { 1: 15, 2: 10, 3: 18, 4: 12, 5: 20, 6: 14, 7: 17, 8: 9, 9: 13, 10: 16, 11: 19, 12: 11, 13: 22, 14: 14, 15: 16, 16: 10, 17: 18, 18: 15, 19: 13, 20: 17, 21: 21, 22: 12, 23: 15, 24: 14, 25: 11, 26: 18, 27: 20, 28: 16, 29: 13, 30: 10, 31: 17, 32: 15, 33: 19, 34: 22, 35: 14, 36: 11, 37: 13, 38: 16, 39: 18, 40: 12, 41: 15, 42: 17, 43: 20, 44: 14, 45: 9 };
+    function createMainStatsChart() {
         const labels = Object.keys(yearlyStats);
         const data = Object.values(yearlyStats);
+        const hotNumber = Object.keys(yearlyStats).reduce((a, b) => yearlyStats[a] > yearlyStats[b] ? a : b);
+        const coldNumber = Object.keys(yearlyStats).reduce((a, b) => yearlyStats[a] < yearlyStats[b] ? a : b);
+
+        const backgroundColors = labels.map(label => {
+            if (label === hotNumber) return 'rgba(255, 99, 132, 0.8)'; // Hot
+            if (label === coldNumber) return 'rgba(54, 162, 235, 0.8)'; // Cold
+            return 'rgba(0, 123, 255, 0.6)';
+        });
         
-        new Chart(ctx, {
+        new Chart(statsChartCanvas, {
             type: 'bar',
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Appearances',
+                    label: '출현 횟수',
                     data: data,
-                    backgroundColor: 'rgba(0, 123, 255, 0.6)',
-                    borderColor: 'rgba(0, 123, 255, 1)',
-                    borderWidth: 1
+                    backgroundColor: backgroundColors,
                 }]
             },
             options: {
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            color: document.body.classList.contains('dark-mode') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
-                        }
-                    },
-                    x: {
-                        grid: {
-                            display: false
-                        }
-                    }
-                },
                 plugins: {
-                    legend: {
-                        display: false
-                    }
+                    legend: { display: false },
+                    title: { display: true, text: 'Hot & Cold Numbers' }
+                },
+                scales: {
+                    y: { beginAtZero: true }
                 }
             }
         });
     }
 
-    // --- Event Listeners ---
-    generateBtn.addEventListener('click', generateAndDisplaySets);
+    // --- Initial Setup ---
+    createNumberSelector(includeNumbersEl);
+    createNumberSelector(excludeNumbersEl);
+    
+    drawNumberEl.textContent = `제 ${getCurrentDrawNumber()}회`;
+    displayNumbers(lastDrawNumbersEl, lastDrawData.numbers);
+    setInterval(updateCountdown, 1000);
+    updateCountdown();
+    
+    renderSavedSets();
+    createMainStatsChart();
+
+    generateBtn.addEventListener('click', handleGenerate);
+    saveBtn.addEventListener('click', saveGeneratedSets);
+    checkWinBtn.addEventListener('click', checkWinnings);
+    shareKakaoBtn.addEventListener('click', shareToKakao);
     themeToggleBtn.addEventListener('click', () => {
         document.body.classList.toggle('dark-mode');
-        // Re-render chart with appropriate colors on theme change
-        createStatsChart(); 
+        // Future: Re-render charts with dark-mode friendly colors
     });
-
-    // --- Initial Page Load ---
-    drawNumberEl.textContent = `제 ${getCurrentDrawNumber()}회`;
-    displayWinningNumbers(lastDrawNumbersEl, lastDrawData.numbers);
-    setInterval(updateCountdown, 1000);
-    updateCountdown(); // Initial call
-    generateAndDisplaySets(); // Initial generation
-    createStatsChart();
 });

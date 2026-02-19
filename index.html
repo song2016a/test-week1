@@ -1,26 +1,28 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lotto Luck - Your Ultimate Lotto Number Generator</title>
-    <meta name="description" content="Generate your lucky lotto numbers, get draw information, and view statistics to increase your chances of winning.">
+    <title>로또 럭 - 나만의 로또 번호 분석 및 생성기</title>
+    <meta name="description" content="고정수와 제외수를 설정하여 나만의 로또 번호를 생성하고, 통계 분석, 번호 저장, 자동 당첨 확인까지 한 곳에서 해결하세요.">
     <meta name="google-adsense-account" content="ca-pub-8148395753551597">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8148395753551597" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="style.css">
     <!-- Chart.js for statistics -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Kakao SDK for sharing -->
+    <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.1/kakao.min.js" integrity="sha384-kDljxUXHaJ9xAb2AzRd59KxjrFjzCI5CEb2fYyeCEgisYYDmYWnpdoMAnZkBuJug" crossorigin="anonymous"></script>
 </head>
 <body>
     <header>
         <div class="header-container">
-            <a href="index.html" class="site-title">Lotto Luck</a>
+            <a href="index.html" class="site-title">로또 럭 🔮</a>
             <nav>
                 <ul>
-                    <li><a href="index.html">Home</a></li>
-                    <li><a href="blog.html">Blog</a></li>
-                    <li><a href="about.html">About Us</a></li>
-                    <li><a href="contact.html">Contact</a></li>
+                    <li><a href="index.html">번호 생성</a></li>
+                    <li><a href="blog.html">블로그</a></li>
+                    <li><a href="about.html">소개</a></li>
+                    <li><a href="contact.html">문의</a></li>
                 </ul>
             </nav>
         </div>
@@ -28,38 +30,73 @@
 
     <main>
         <section class="hero">
-            <h1>Welcome to Your Personal Lotto Assistant</h1>
-            <p class="subtitle">Your one-stop destination for lottery results, statistics, and number generation.</p>
+            <h1>나만의 로또 번호 분석 & 생성기</h1>
+            <p class="subtitle">단순한 랜덤 생성을 넘어, 당신의 분석과 행운을 조합하세요.</p>
         </section>
 
         <!-- Lotto Draw Information -->
-        <section class="draw-info-container container">
-            <h2><span id="draw-number"></span> Lotto Draw Information</h2>
+        <section class="container">
+            <h2><span id="draw-number"></span> 최신 당첨 정보</h2>
             <div class="draw-details">
                 <div class="countdown-timer">
-                    <h3>Next Draw Countdown</h3>
+                    <h3>다음 추첨까지</h3>
                     <p id="countdown">-</p>
                 </div>
                 <div class="last-winning-numbers">
-                    <h3>Previous Draw's Winning Numbers</h3>
+                    <h3>지난 회차 당첨번호</h3>
                     <div id="last-draw-numbers" class="lotto-numbers"></div>
                 </div>
             </div>
         </section>
 
-        <!-- Lotto Number Generator -->
-        <div class="container">
-            <h2>Lotto Number Generator</h2>
-            <div id="lotto-generator-sets">
-                <!-- Sets will be dynamically generated here -->
+        <!-- Advanced Lotto Number Generator -->
+        <div class="container generator-container">
+            <h2>나만의 번호 생성하기</h2>
+            
+            <div class="number-settings">
+                <div class="setting-group">
+                    <label for="include-numbers">고정수 (꼭 포함할 번호)</label>
+                    <div id="include-numbers" class="number-selector"></div>
+                </div>
+                <div class="setting-group">
+                    <label for="exclude-numbers">제외수 (꼭 제외할 번호)</label>
+                    <div id="exclude-numbers" class="number-selector"></div>
+                </div>
             </div>
-            <button id="generate-btn">Generate 5 Sets</button>
-            <button id="theme-toggle-btn">Toggle Theme</button>
+
+            <div id="lotto-generator-sets">
+                <!-- Generated sets will appear here -->
+            </div>
+            <div class="generator-actions">
+                <button id="generate-btn">🍀 행운 번호 생성 (5게임)</button>
+                <button id="theme-toggle-btn">🌙 다크 모드</button>
+            </div>
         </div>
+
+        <!-- Generated Numbers Analysis -->
+        <section class="container analysis-container">
+            <h2>생성 번호 조합 분석</h2>
+            <div id="analysis-results">
+                <!-- Analysis charts will appear here -->
+            </div>
+        </section>
+
+        <!-- Saved Numbers & Winning Check -->
+        <section class="container saved-numbers-container">
+            <h2>내 번호 보관함</h2>
+            <div id="saved-sets-display">
+                <p>생성한 번호를 저장하고 다음 추첨일에 당첨 결과를 확인하세요!</p>
+            </div>
+            <div class="saved-actions">
+                <button id="save-btn" disabled>선택 번호 저장하기</button>
+                <button id="check-win-btn">당첨 확인하기</button>
+                <button id="share-kakao-btn">카카오톡 공유하기</button>
+            </div>
+        </section>
 
         <!-- Lotto Number Statistics -->
         <section class="container">
-            <h2>Lotto Number Winning Frequency (Last Year)</h2>
+            <h2>번호별 통계 (최근 1년)</h2>
             <div class="chart-container">
                 <canvas id="stats-chart"></canvas>
             </div>
@@ -69,11 +106,11 @@
 
     <footer>
         <div class="footer-container">
-            <p>&copy; 2024 Lotto Luck. All Rights Reserved.</p>
+            <p>&copy; 2024 로또 럭. All Rights Reserved.</p>
             <nav>
                 <ul>
-                    <li><a href="privacy.html">Privacy Policy</a></li>
-                    <li><a href="#">Terms of Service</a></li> <!-- Placeholder -->
+                    <li><a href="privacy.html">개인정보처리방침</a></li>
+                    <li><a href="#">이용약관</a></li>
                 </ul>
             </nav>
         </div>
