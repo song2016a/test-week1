@@ -8,11 +8,13 @@
     <meta name="google-adsense-account" content="ca-pub-8148395753551597">
     
     <!-- Styles -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     <link rel="stylesheet" href="style.css">
     
     <!-- Scripts -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8148395753551597" crossorigin="anonymous"></script>
     <!-- External Libraries -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
     <!-- Main Application Script -->
     <script src="main.js" defer></script>
@@ -103,6 +105,12 @@
             <div class="chart-container">
                 <canvas id="stats-chart"></canvas>
             </div>
+        </section>
+
+        <!-- Lotto Store Map -->
+        <section class="container">
+            <h2>내 주변 로또 판매점</h2>
+            <div id="map" style="height: 400px; margin-top: 20px;"></div>
         </section>
 
         <!-- Disqus Comments Section -->

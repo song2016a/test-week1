@@ -15,10 +15,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const checkWinBtn = document.getElementById('check-win-btn');
     const savedSetsDisplay = document.getElementById('saved-sets-display');
     const statsChartCanvas = document.getElementById('stats-chart');
+    const mapEl = document.getElementById('map');
 
     // --- Global State ---
     let generatedSets = [];
     let savedSets = JSON.parse(localStorage.getItem('lottoSets')) || [];
+    let map;
     // Placeholder data - In a real app, this would be fetched from an API
     let lastDrawData = {
         draw: 1130,
@@ -30,6 +32,13 @@ document.addEventListener('DOMContentLoaded', () => {
             third: 1612250
         }
     };
+     // Mock data for lottery stores
+    const lottoStores = [
+        { name: '대박 로또', lat: 37.5665, lng: 126.9780, firstPlace: true },
+        { name: '행운 복권방', lat: 37.5650, lng: 126.9790, firstPlace: false },
+        { name: '로또 명당', lat: 37.5680, lng: 126.9760, firstPlace: true },
+        { name: '인생 역전', lat: 37.5660, lng: 126.9750, firstPlace: false }
+    ];
 
     // --- LOTTERY DATA & LOGIC ---
 
@@ -228,6 +237,53 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- MAP ---
+    function initMap() {
+        // Default location (Seoul)
+        map = L.map(mapEl).setView([37.5665, 126.9780], 13);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Try to get user's location
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(position => {
+                const userLat = position.coords.latitude;
+                const userLng = position.coords.longitude;
+                map.setView([userLat, userLng], 14);
+                L.marker([userLat, userLng]).addTo(map)
+                    .bindPopup('현재 위치')
+                    .openPopup();
+                addStoreMarkers();
+            }, () => {
+                // User denied location access or an error occurred
+                addStoreMarkers();
+            });
+        } else {
+            // Geolocation not supported by the browser
+            addStoreMarkers();
+        }
+    }
+
+    function addStoreMarkers() {
+        const firstPlaceIcon = L.icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
+
+        lottoStores.forEach(store => {
+            const markerOptions = store.firstPlace ? { icon: firstPlaceIcon } : {};
+            L.marker([store.lat, store.lng], markerOptions).addTo(map)
+                .bindPopup(`<b>${store.name}</b><br>${store.firstPlace ? '🏆 1등 배출점' : '일반 판매점'}`);
+        });
+    }
+
+
     // --- MAIN STATS CHART ---
     const yearlyStats = { 1: 15, 2: 10, 3: 18, 4: 12, 5: 20, 6: 14, 7: 17, 8: 9, 9: 13, 10: 16, 11: 19, 12: 11, 13: 22, 14: 14, 15: 16, 16: 10, 17: 18, 18: 15, 19: 13, 20: 17, 21: 21, 22: 12, 23: 15, 24: 14, 25: 11, 26: 18, 27: 20, 28: 16, 29: 13, 30: 10, 31: 17, 32: 15, 33: 19, 34: 22, 35: 14, 36: 11, 37: 13, 38: 16, 39: 18, 40: 12, 41: 15, 42: 17, 43: 20, 44: 14, 45: 9 };
     function createMainStatsChart() {
@@ -282,6 +338,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         renderSavedSets();
         createMainStatsChart();
+        initMap();
 
         generateBtn.addEventListener('click', handleGenerate);
         saveBtn.addEventListener('click', saveGeneratedSets);
