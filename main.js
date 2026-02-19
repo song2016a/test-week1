@@ -1,12 +1,11 @@
-
 document.addEventListener('DOMContentLoaded', () => {
-    // --- Kakao SDK Init ---
-    Kakao.init('263943f3521b5b542038757a3e8d2c43');
-
     // --- DOM Elements ---
     const drawNumberEl = document.getElementById('draw-number');
     const countdownEl = document.getElementById('countdown');
     const lastDrawNumbersEl = document.getElementById('last-draw-numbers');
+    const prize1El = document.getElementById('prize-1');
+    const prize2El = document.getElementById('prize-2');
+    const prize3El = document.getElementById('prize-3');
     const includeNumbersEl = document.getElementById('include-numbers');
     const excludeNumbersEl = document.getElementById('exclude-numbers');
     const generateBtn = document.getElementById('generate-btn');
@@ -15,14 +14,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const analysisResultsEl = document.getElementById('analysis-results');
     const saveBtn = document.getElementById('save-btn');
     const checkWinBtn = document.getElementById('check-win-btn');
-    const shareKakaoBtn = document.getElementById('share-kakao-btn');
     const savedSetsDisplay = document.getElementById('saved-sets-display');
     const statsChartCanvas = document.getElementById('stats-chart');
 
     // --- Global State ---
     let generatedSets = [];
     let savedSets = JSON.parse(localStorage.getItem('lottoSets')) || [];
-    let lastDrawData = { draw: 1130, numbers: [5, 11, 13, 19, 21, 33], bonus: 45 }; // Placeholder
+    // Placeholder data - In a real app, this would be fetched from an API
+    let lastDrawData = {
+        draw: 1130,
+        numbers: [5, 11, 13, 19, 21, 33],
+        bonus: 45,
+        prizes: {
+            first: 2556229688,
+            second: 75740139,
+            third: 1612250
+        }
+    };
 
     // --- LOTTERY DATA & LOGIC ---
 
@@ -61,19 +69,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         countdownEl.innerHTML = `${d}일 ${h}시간 ${m}분 ${s}초`;
     }
-    
+
     // --- UI RENDERING ---
 
-    function createNumberSelector(container) {
+    function createNumberSelector(container, type) {
         for (let i = 1; i <= 45; i++) {
             const numBtn = document.createElement('button');
             numBtn.textContent = i;
             numBtn.classList.add('num-btn');
             numBtn.dataset.number = i;
-            numBtn.addEventListener('click', () => {
-                numBtn.classList.toggle('selected');
-                validateSelections();
-            });
+            numBtn.addEventListener('click', (e) => handleNumberSelection(e, type));
             container.appendChild(numBtn);
         }
     }
@@ -90,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
         container.innerHTML = '';
         numbers.forEach(num => container.appendChild(createLottoBall(num)));
     }
-    
+
     function renderSavedSets() {
         savedSetsDisplay.innerHTML = '';
         if (savedSets.length === 0) {
@@ -128,14 +133,14 @@ document.addEventListener('DOMContentLoaded', () => {
             .filter(n => !include.includes(n) && !exclude.includes(n));
             
         while (numbers.size < 6) {
-            if (availableNumbers.length === 0) break; 
+            if (availableNumbers.length === 0) break;
             const randomIndex = Math.floor(Math.random() * availableNumbers.length);
             const chosen = availableNumbers.splice(randomIndex, 1)[0];
             numbers.add(chosen);
         }
         return Array.from(numbers).sort((a, b) => a - b);
     }
-    
+
     function handleGenerate() {
         const include = Array.from(includeNumbersEl.querySelectorAll('.selected')).map(btn => parseInt(btn.dataset.number));
         const exclude = Array.from(excludeNumbersEl.querySelectorAll('.selected')).map(btn => parseInt(btn.dataset.number));
@@ -159,6 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function analyzeAndDisplaySets(sets) {
         analysisResultsEl.innerHTML = '';
+        if (typeof Chart === 'undefined') return; // Chart.js might not be loaded
         
         const oddEvenCounts = { odd: 0, even: 0 };
         const rangeCounts = { '~10': 0, '11~20': 0, '21~30': 0, '31~40': 0, '41~45': 0 };
@@ -196,13 +202,26 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function validateSelections() {
+    function handleNumberSelection(event, type) {
+        const button = event.target;
+        const number = parseInt(button.dataset.number);
+        
+        button.classList.toggle('selected');
+
+        // Prevent selecting the same number as both include and exclude
+        const otherType = type === 'include' ? 'exclude' : 'include';
+        const otherSelector = (otherType === 'include' ? includeNumbersEl : excludeNumbersEl);
+        const otherButton = otherSelector.querySelector(`[data-number="${number}"]`);
+        if (otherButton && otherButton.classList.contains('selected')) {
+            otherButton.classList.remove('selected');
+        }
+
+        // Validate include count
         const includeCount = includeNumbersEl.querySelectorAll('.selected').length;
         if (includeCount > 5) {
             alert('고정수는 5개까지만 선택할 수 있습니다.');
-            event.target.classList.remove('selected');
+            button.classList.remove('selected');
         }
-        // Allow selecting the same number in both include and exclude, generate logic will handle it.
     }
 
     // --- ACTIONS ---
@@ -244,40 +263,17 @@ document.addEventListener('DOMContentLoaded', () => {
             resultEl.textContent = `결과: ${rank}`;
             if(rank !== '낙첨') resultEl.style.color = 'red';
             
-            // Remove old result if exists
             const oldResult = setContainer.querySelector('.win-result');
             if(oldResult) oldResult.remove();
             
             setContainer.appendChild(resultEl);
         });
     }
-    
-    function shareToKakao() {
-        if (generatedSets.length === 0) {
-            alert('먼저 번호를 생성해주세요.');
-            return;
-        }
 
-        const setsText = generatedSets.map((set, i) => `[${i+1}게임] ${set.join(', ')}`).join('
-');
-        
-        Kakao.Share.sendDefault({
-            objectType: 'text',
-            text: `이번 주 나의 행운 번호🍀
-
-${setsText}
-
-당신도 로또 럭에서 행운을 시험해보세요!`,
-            link: {
-                mobileWebUrl: window.location.href,
-                webUrl: window.location.href,
-            },
-        });
-    }
-    
     // --- MAIN STATS CHART ---
     const yearlyStats = { 1: 15, 2: 10, 3: 18, 4: 12, 5: 20, 6: 14, 7: 17, 8: 9, 9: 13, 10: 16, 11: 19, 12: 11, 13: 22, 14: 14, 15: 16, 16: 10, 17: 18, 18: 15, 19: 13, 20: 17, 21: 21, 22: 12, 23: 15, 24: 14, 25: 11, 26: 18, 27: 20, 28: 16, 29: 13, 30: 10, 31: 17, 32: 15, 33: 19, 34: 22, 35: 14, 36: 11, 37: 13, 38: 16, 39: 18, 40: 12, 41: 15, 42: 17, 43: 20, 44: 14, 45: 9 };
     function createMainStatsChart() {
+        if (typeof Chart === 'undefined') return;
         const labels = Object.keys(yearlyStats);
         const data = Object.values(yearlyStats);
         const hotNumber = Object.keys(yearlyStats).reduce((a, b) => yearlyStats[a] > yearlyStats[b] ? a : b);
@@ -312,23 +308,30 @@ ${setsText}
     }
 
     // --- Initial Setup ---
-    createNumberSelector(includeNumbersEl);
-    createNumberSelector(excludeNumbersEl);
-    
-    drawNumberEl.textContent = `제 ${getCurrentDrawNumber()}회`;
-    displayNumbers(lastDrawNumbersEl, lastDrawData.numbers);
-    setInterval(updateCountdown, 1000);
-    updateCountdown();
-    
-    renderSavedSets();
-    createMainStatsChart();
+    function init() {
+        createNumberSelector(includeNumbersEl, 'include');
+        createNumberSelector(excludeNumbersEl, 'exclude');
+        
+        drawNumberEl.textContent = `제 ${getCurrentDrawNumber()}회`;
+        displayNumbers(lastDrawNumbersEl, lastDrawData.numbers);
+        
+        prize1El.textContent = lastDrawData.prizes.first.toLocaleString();
+        prize2El.textContent = lastDrawData.prizes.second.toLocaleString();
+        prize3El.textContent = lastDrawData.prizes.third.toLocaleString();
 
-    generateBtn.addEventListener('click', handleGenerate);
-    saveBtn.addEventListener('click', saveGeneratedSets);
-    checkWinBtn.addEventListener('click', checkWinnings);
-    shareKakaoBtn.addEventListener('click', shareToKakao);
-    themeToggleBtn.addEventListener('click', () => {
-        document.body.classList.toggle('dark-mode');
-        // Future: Re-render charts with dark-mode friendly colors
-    });
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
+        
+        renderSavedSets();
+        createMainStatsChart();
+
+        generateBtn.addEventListener('click', handleGenerate);
+        saveBtn.addEventListener('click', saveGeneratedSets);
+        checkWinBtn.addEventListener('click', checkWinnings);
+        themeToggleBtn.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+        });
+    }
+
+    init();
 });

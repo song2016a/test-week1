@@ -14,7 +14,6 @@
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8148395753551597" crossorigin="anonymous"></script>
     <!-- External Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
-    <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.1/kakao.min.js" integrity="sha384-kDljxUXHaJ9xAb2AzRd59KxjrFjzCI5CEb2fYyeCEgisYYDmYWnpdoMAnZkBuJug" crossorigin="anonymous" defer></script>
     <!-- Main Application Script -->
     <script src="main.js" defer></script>
 </head>
@@ -50,6 +49,14 @@
                 <div class="last-winning-numbers">
                     <h3>지난 회차 당첨번호</h3>
                     <div id="last-draw-numbers" class="lotto-numbers"></div>
+                </div>
+                <div class="last-winning-prizes">
+                    <h3>지난 회차 당첨금액</h3>
+                    <ul id="prize-list">
+                        <li><strong>1등:</strong> <span id="prize-1">-</span> 원</li>
+                        <li><strong>2등:</strong> <span id="prize-2">-</span> 원</li>
+                        <li><strong>3등:</strong> <span id="prize-3">-</span> 원</li>
+                    </ul>
                 </div>
             </div>
         </section>
@@ -95,7 +102,6 @@
             <div class="saved-actions">
                 <button id="save-btn" disabled>선택 번호 저장하기</button>
                 <button id="check-win-btn">당첨 확인하기</button>
-                <button id="share-kakao-btn">카카오톡 공유하기</button>
             </div>
         </section>
 
