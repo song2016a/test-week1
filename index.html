@@ -4,10 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lotto Luck - Your Ultimate Lotto Number Generator</title>
-    <meta name="description" content="Generate your lucky lotto numbers and read our blog for lottery strategies, stories, and tips to increase your chances of winning.">
+    <meta name="description" content="Generate your lucky lotto numbers, get draw information, and view statistics to increase your chances of winning.">
     <meta name="google-adsense-account" content="ca-pub-8148395753551597">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8148395753551597" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="style.css">
+    <!-- Chart.js for statistics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <header>
@@ -27,22 +29,42 @@
     <main>
         <section class="hero">
             <h1>Welcome to Your Personal Lotto Assistant</h1>
-            <p class="subtitle">Beyond just numbers, we offer insights and stories to fuel your lottery journey. Generate your next set of numbers with our tool below and explore our blog for winning strategies.</p>
+            <p class="subtitle">Your one-stop destination for lottery results, statistics, and number generation.</p>
         </section>
 
+        <!-- Lotto Draw Information -->
+        <section class="draw-info-container container">
+            <h2><span id="draw-number"></span> Lotto Draw Information</h2>
+            <div class="draw-details">
+                <div class="countdown-timer">
+                    <h3>Next Draw Countdown</h3>
+                    <p id="countdown">-</p>
+                </div>
+                <div class="last-winning-numbers">
+                    <h3>Previous Draw's Winning Numbers</h3>
+                    <div id="last-draw-numbers" class="lotto-numbers"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Lotto Number Generator -->
         <div class="container">
             <h2>Lotto Number Generator</h2>
-            <div class="lotto-numbers">
-                <div class="lotto-ball"></div>
-                <div class="lotto-ball"></div>
-                <div class="lotto-ball"></div>
-                <div class="lotto-ball"></div>
-                <div class="lotto-ball"></div>
-                <div class="lotto-ball"></div>
+            <div id="lotto-generator-sets">
+                <!-- Sets will be dynamically generated here -->
             </div>
-            <button id="generate-btn">Generate Numbers</button>
+            <button id="generate-btn">Generate 5 Sets</button>
             <button id="theme-toggle-btn">Toggle Theme</button>
         </div>
+
+        <!-- Lotto Number Statistics -->
+        <section class="container">
+            <h2>Lotto Number Winning Frequency (Last Year)</h2>
+            <div class="chart-container">
+                <canvas id="stats-chart"></canvas>
+            </div>
+        </section>
+
     </main>
 
     <footer>

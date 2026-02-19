@@ -1,7 +1,7 @@
 /* === Global Styles & Variables === */
 :root {
-    --primary-color: #007bff; /* A nice blue */
-    --secondary-color: #6c757d; /* A calm grey */
+    --primary-color: #007bff;
+    --secondary-color: #6c757d;
     --background-color: #f8f9fa;
     --surface-color: #ffffff;
     --text-color: #212529;
@@ -17,6 +17,7 @@ body {
     color: var(--text-color);
     margin: 0;
     line-height: 1.6;
+    transition: background-color 0.3s, color 0.3s;
 }
 
 /* === Dark Mode === */
@@ -34,76 +35,22 @@ header, footer {
     padding: 1rem 2rem;
     transition: background-color 0.3s;
 }
+.header-container, .footer-container { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+.site-title { font-family: var(--heading-font); font-size: 1.8rem; font-weight: bold; color: var(--primary-color); text-decoration: none; }
+nav ul { list-style: none; margin: 0; padding: 0; display: flex; gap: 1.5rem; }
+nav a { text-decoration: none; color: var(--secondary-color); font-weight: 500; transition: color 0.2s ease-in-out; }
+nav a:hover, nav a.active { color: var(--primary-color); }
+footer { text-align: center; padding: 2rem; margin-top: 4rem; font-size: 0.9rem; color: var(--secondary-color); }
 
-.header-container, .footer-container {
-    max-width: 1100px;
-    margin: 0 auto;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
+/* === Main Content & Layout === */
+main { padding: 2rem; }
+.hero { text-align: center; max-width: 800px; margin: 0 auto 3rem auto; }
+.hero h1 { font-family: var(--heading-font); font-size: 2.8rem; color: var(--text-color); margin-bottom: 0.5rem; }
+.hero .subtitle { font-size: 1.2rem; color: var(--secondary-color); }
 
-.site-title {
-    font-family: var(--heading-font);
-    font-size: 1.8rem;
-    font-weight: bold;
-    color: var(--primary-color);
-    text-decoration: none;
-}
-
-nav ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    gap: 1.5rem;
-}
-
-nav a {
-    text-decoration: none;
-    color: var(--secondary-color);
-    font-weight: 500;
-    transition: color 0.2s ease-in-out;
-}
-
-nav a:hover, nav a.active {
-    color: var(--primary-color);
-}
-
-footer {
-    text-align: center;
-    padding: 2rem;
-    margin-top: 4rem;
-    font-size: 0.9rem;
-    color: var(--secondary-color);
-}
-
-/* === Main Content & Pages === */
-main {
-    display: block; /* For older browsers */
-    padding: 2rem;
-}
-
-.hero {
-    text-align: center;
-    max-width: 800px;
-    margin: 2rem auto 4rem auto;
-}
-
-.hero h1 {
-    font-family: var(--heading-font);
-    font-size: 3rem;
-    color: var(--text-color);
-}
-
-.hero .subtitle {
-    font-size: 1.2rem;
-    color: var(--secondary-color);
-}
-
-/* Lotto Generator Container */
+/* === General Container === */
 .container {
-    max-width: 600px;
+    max-width: 800px; /* Increased max-width for better layout */
     margin: 2rem auto;
     text-align: center;
     background-color: var(--surface-color);
@@ -112,26 +59,45 @@ main {
     box-shadow: var(--box-shadow);
     transition: background-color 0.3s;
 }
+.container h2 { font-family: var(--heading-font); margin-top: 0; margin-bottom: 1.5rem; }
 
-.container h2 {
-    font-family: var(--heading-font);
-    margin-top: 0;
+/* === NEW: Draw Info Container === */
+.draw-details { display: flex; justify-content: space-around; align-items: center; gap: 2rem; text-align: center; }
+.countdown-timer h3, .last-winning-numbers h3 { font-family: var(--heading-font); color: var(--secondary-color); font-size: 1.1rem; margin-bottom: 0.5rem; }
+#countdown { font-size: 1.8rem; font-weight: bold; color: var(--primary-color); }
+#last-draw-numbers { margin-bottom: 0; }
+
+/* === Lotto Number Generator === */
+#lotto-generator-sets .lotto-set {
+    margin-bottom: 1rem; /* Spacing between generated sets */
 }
 
 /* Lotto Balls & Buttons */
-.lotto-numbers { display: flex; justify-content: center; margin-bottom: 30px; }
-.lotto-ball { width: 50px; height: 50px; border-radius: 50%; background-color: #eee; display: flex; justify-content: center; align-items: center; font-size: 20px; font-weight: bold; color: #333; margin: 0 8px; transition: all 0.3s ease; }
-#generate-btn, #theme-toggle-btn { color: white; padding: 12px 24px; border: none; border-radius: 8px; font-size: 1rem; cursor: pointer; transition: background-color 0.3s ease, transform 0.2s; margin: 5px; }
+.lotto-numbers { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.lotto-ball { 
+    width: 45px; 
+    height: 45px; 
+    border-radius: 50%; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    font-size: 18px; 
+    font-weight: bold; 
+    color: white; /* Text color is always white for contrast */
+    box-shadow: inset -2px -2px 4px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+}
+#generate-btn, #theme-toggle-btn { color: white; padding: 12px 24px; border: none; border-radius: 8px; font-size: 1rem; cursor: pointer; transition: background-color 0.3s ease, transform 0.2s; margin: 10px 5px 0 5px; }
 #generate-btn { background-color: var(--primary-color); }
 #generate-btn:hover { background-color: #0056b3; transform: translateY(-2px); }
 #theme-toggle-btn { background-color: var(--secondary-color); }
 #theme-toggle-btn:hover { background-color: #5a6268; }
 
-/* Dark Mode for Lotto */
-body.dark-mode .lotto-ball { background-color: #333; color: #fff; border: 1px solid #444; }
+/* === NEW: Statistics Chart === */
+.chart-container { position: relative; width: 100%; height: auto; max-height: 400px; }
 
-/* === Blog & Articles === */
-.blog-header, .about-us, .contact-form-section, .privacy-policy, .blog-post {
+/* === Other Pages (Blog, About, etc.) === */
+.blog-header, .about-us, .contact-form-section, .privacy-policy, .blog-post, .blog-list .blog-post-preview {
     max-width: 800px;
     margin: 2rem auto;
     padding: 2rem;
@@ -139,45 +105,20 @@ body.dark-mode .lotto-ball { background-color: #333; color: #fff; border: 1px so
     border-radius: var(--border-radius);
     box-shadow: var(--box-shadow);
 }
-
-.blog-list .blog-post-preview {
-    max-width: 800px;
-    margin: 0 auto 2rem auto;
-    padding: 2rem;
-    background-color: var(--surface-color);
-    border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow);
-}
-
-.blog-header h1, .blog-post-preview h2 a, .blog-post h1, .about-us h1, .contact-form-section h1, .privacy-policy h1 {
-    font-family: var(--heading-font);
-    color: var(--text-color);
-    text-decoration: none;
-    transition: color 0.2s;
-}
-
+.blog-header h1, .blog-post-preview h2 a, .blog-post h1, .about-us h1, .contact-form-section h1, .privacy-policy h1 { font-family: var(--heading-font); color: var(--text-color); text-decoration: none; transition: color 0.2s; }
 .blog-post-preview h2 a:hover { color: var(--primary-color); }
 .post-meta { font-size: 0.9rem; color: var(--secondary-color); margin-bottom: 1rem; }
-.read-more { color: var(--primary-color); text-decoration: none; font-weight: bold; }
-.blog-post-content p, .blog-post-content h2 {
-    margin-bottom: 1.5rem;
-}
-.blog-post-content h2 { font-family: var(--heading-font); }
-
-/* === Form Styles (Contact Page) === */
-.form-container { max-width: 100%; padding: 0; box-shadow: none; }
-form { display: flex; flex-direction: column; }
-form label { margin-bottom: 8px; font-weight: bold; color: var(--text-color); }
-form input, form textarea { padding: 12px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 20px; font-size: 1rem; font-family: inherit; background-color: var(--background-color); color: var(--text-color); transition: border-color 0.3s, box-shadow 0.3s; }
-form input:focus, form textarea:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); }
-form button { background-color: var(--primary-color); color: white; padding: 15px; border: none; border-radius: 8px; font-size: 1.1rem; cursor: pointer; transition: background-color 0.3s; }
-form button:hover { background-color: #0056b3; }
 
 /* === Responsive Design === */
 @media (max-width: 768px) {
+    main { padding: 1rem; }
     .header-container { flex-direction: column; gap: 1rem; }
     .hero h1 { font-size: 2.2rem; }
-    main { padding: 1rem; }
     .container, .blog-header, .about-us, .contact-form-section, .privacy-policy, .blog-list .blog-post-preview, .blog-post { padding: 1.5rem; }
-    .lotto-ball { width: 40px; height: 40px; font-size: 16px; margin: 0 5px;}
+    
+    .draw-details { flex-direction: column; gap: 1.5rem; }
+    #countdown { font-size: 1.5rem; }
+    
+    .lotto-ball { width: 40px; height: 40px; font-size: 16px; }
+    .lotto-numbers { gap: 5px; }
 }

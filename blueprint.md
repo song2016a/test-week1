@@ -1,50 +1,49 @@
 
-# Blueprint: Lotto Number Generator - AdSense Optimization
+# Blueprint: Lotto Luck - Enhanced Features
 
 ## 1. Project Overview
 
-This project aims to transform a simple "Lotto Number Generator" tool into a high-quality, content-rich website optimized for Google AdSense approval. The focus is on providing unique value to visitors, building trust, and ensuring a professional user experience.
+This project aims to transform a simple "Lotto Number Generator" tool into a high-quality, feature-rich website optimized for Google AdSense approval and user engagement. The focus is on providing unique value to visitors through comprehensive lottery information, building trust, and ensuring a professional user experience.
 
 ## 2. Core Features & Design Philosophy
 
 ### a. Site Structure & Navigation
 - **Header:** A clean and prominent header containing the site title and navigation.
-- **Navigation Bar:** An intuitive navigation menu with links to:
-  - Home (Generator)
-  - Blog
-  - About Us
-  - Contact
-- **Footer:** A comprehensive footer with links to:
-  - Privacy Policy
-  - Terms of Service (Placeholder)
-  - Social Media Icons (Placeholders)
+- **Navigation Bar:** An intuitive navigation menu with links to Home, Blog, About Us, and Contact.
+- **Footer:** A comprehensive footer with links to Privacy Policy and Terms of Service.
 
 ### b. Content Strategy
-- **Homepage:** The Lotto Number Generator remains the central feature, but it is now supported by introductory content that explains the tool and engages the user.
-- **High-Quality Blog:** A dedicated blog section will feature original, well-researched articles on topics related to lotteries. This demonstrates expertise and provides substantial, unique content.
-  - **Sample Article 1:** "The Psychology of Choosing Lottery Numbers: Randomness vs. Strategy"
-  - **Sample Article 2:** "Famous Lottery Winners: Stories of Luck and Fortune"
-- **Trust-Building Pages:**
-  - **About Us:** A page explaining the mission and purpose of the website.
-  - **Contact:** A dedicated page for the partnership inquiry form, making it easy for users to get in touch.
-  - **Privacy Policy:** A clear and standard privacy policy to inform users about data handling.
+- **Homepage:** The homepage is the central hub, featuring not just the number generator but a suite of tools and information to engage users.
+- **High-Quality Blog:** A dedicated blog with original articles on lottery strategies, stories, and psychology to demonstrate expertise.
+- **Trust-Building Pages:** "About Us," "Contact," and "Privacy Policy" pages to build credibility.
 
 ### c. Visual Design
-- **Aesthetics:** A modern, clean, and visually balanced layout with ample whitespace for readability.
-- **Typography:** Clear and legible fonts to enhance the reading experience.
-- **Responsiveness:** A fully responsive design that works flawlessly on desktops, tablets, and mobile devices.
-- **Consistency:** A consistent design language (colors, fonts, layout) is maintained across all pages.
+- **Aesthetics:** A modern, clean, and visually balanced layout.
+- **Responsiveness:** A fully responsive design for all devices.
+- **Consistency:** A consistent design language across all pages.
 
-## 3. Current Implementation Plan
+## 3. Current Implementation Plan: Homepage Enhancement
 
-1.  **Restructure `index.html`:** Implement the new header, footer, and add introductory content.
-2.  **Create New HTML Files:**
-    - `blog.html` (Blog archive page)
-    - `article1.html` (First blog post)
-    - `article2.html` (Second blog post)
-    - `about.html`
-    - `contact.html`
-    - `privacy.html`
-3.  **Update `style.css`:** Add styles for all new elements, ensuring a consistent and responsive design.
-4.  **Populate Content:** Write and add high-quality, original content for all new pages and articles.
-5.  **Commit & Deploy:** Push all changes to the GitHub repository.
+The following features will be added to the homepage (`index.html`) to make it more dynamic and valuable for users.
+
+1.  **Lotto Draw Information Block:**
+    *   **Current Draw Number:** Display the upcoming lottery draw number (e.g., "제 1131회"). This will be calculated based on the current date.
+    *   **Draw Countdown:** A real-time countdown timer showing the days, hours, minutes, and seconds remaining until the next draw (every Saturday at 8:45 PM KST).
+    *   **Previous Draw's Winning Numbers:** Display the winning numbers from the last draw for easy reference.
+
+2.  **Upgraded Lotto Number Generator:**
+    *   **Generate 5 Sets:** Modify the generator to produce five unique sets of 6 numbers with a single click, providing users with more options.
+    *   The UI will be updated to display these five sets clearly.
+
+3.  **Lotto Number Statistics Section:**
+    *   **Winning Frequency Chart:** Add a new section displaying the winning frequency of each of the 45 lottery numbers over the past year.
+    *   This will be visualized as a simple bar chart to provide users with statistical insights. (Note: This will use placeholder data for now, as a live API is out of scope).
+
+4.  **Implementation Steps:**
+    *   **Phase 1: `index.html` Structure:** Add the new HTML elements for the draw information block, the 5-set generator, and the statistics chart.
+    *   **Phase 2: `main.js` Logic:**
+        *   Implement the logic to calculate the current draw number.
+        *   Create the countdown timer functionality.
+        *   Update the number generation function to create 5 sets.
+        *   Create and display the statistics chart from placeholder data.
+    *   **Phase 3: `style.css` Styling:** Apply styles to all new elements to ensure they are visually appealing, consistent with the site's design, and responsive.
