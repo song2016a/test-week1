@@ -1,3 +1,4 @@
+
 document.addEventListener('DOMContentLoaded', () => {
     // --- DOM Elements ---
     const drawNumberEl = document.getElementById('draw-number');
@@ -21,7 +22,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let generatedSets = [];
     let savedSets = JSON.parse(localStorage.getItem('lottoSets')) || [];
     let map;
-    // Placeholder data - In a real app, this would be fetched from an API
+    let lottoStores = []; // This will be populated from the JSON file
+
+    // Placeholder data for the last draw - In a real app, this would be fetched from an API
     let lastDrawData = {
         draw: 1130,
         numbers: [5, 11, 13, 19, 21, 33],
@@ -32,22 +35,15 @@ document.addEventListener('DOMContentLoaded', () => {
             third: 1612250
         }
     };
-     // Mock data for lottery stores
-    const lottoStores = [
-        { name: '대박 로또', lat: 37.5665, lng: 126.9780, firstPlace: true },
-        { name: '행운 복권방', lat: 37.5650, lng: 126.9790, firstPlace: false },
-        { name: '로또 명당', lat: 37.5680, lng: 126.9760, firstPlace: true },
-        { name: '인생 역전', lat: 37.5660, lng: 126.9750, firstPlace: false }
-    ];
 
     // --- LOTTERY DATA & LOGIC ---
 
     const getLottoColor = (num) => {
-        if (num <= 10) return '#fbc400'; // 노랑
-        if (num <= 20) return '#69c8f2'; // 파랑
-        if (num <= 30) return '#ff7272'; // 빨강
-        if (num <= 40) return '#aaa';    // 회색
-        return '#b0d840';               // 녹색
+        if (num <= 10) return '#fbc400'; // Yellow
+        if (num <= 20) return '#69c8f2'; // Blue
+        if (num <= 30) return '#ff7272'; // Red
+        if (num <= 40) return '#aaa';    // Gray
+        return '#b0d840';               // Green
     };
 
     function getCurrentDrawNumber() {
@@ -183,10 +179,9 @@ document.addEventListener('DOMContentLoaded', () => {
             otherButton.classList.remove('selected');
         }
 
-        // Validate include count
         const includeCount = includeNumbersEl.querySelectorAll('.selected').length;
-        if (includeCount > 5) {
-            alert('고정수는 5개까지만 선택할 수 있습니다.');
+        if (includeCount > 6) {
+            alert('고정수는 6개까지만 선택할 수 있습니다.');
             button.classList.remove('selected');
         }
     }
@@ -238,13 +233,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- MAP ---
-    function initMap() {
+    async function initMap() {
         // Default location (Seoul)
         map = L.map(mapEl).setView([37.5665, 126.9780], 13);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
+
+        await fetchStores();
 
         // Try to get user's location
         if (navigator.geolocation) {
@@ -257,12 +254,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     .openPopup();
                 addStoreMarkers();
             }, () => {
-                // User denied location access or an error occurred
-                addStoreMarkers();
+                addStoreMarkers(); // User denied or error
             });
         } else {
-            // Geolocation not supported by the browser
-            addStoreMarkers();
+            addStoreMarkers(); // Geolocation not supported
+        }
+    }
+
+    async function fetchStores() {
+        try {
+            const response = await fetch('lotto-winning-stores.json');
+            if (!response.ok) {
+                throw new Error('네트워크 응답이 올바르지 않습니다.');
+            }
+            lottoStores = await response.json();
+        } catch (error) {
+            console.error('로또 판매점 데이터를 불러오는 데 실패했습니다:', error);
+            lottoStores = [];
         }
     }
 
@@ -276,10 +284,18 @@ document.addEventListener('DOMContentLoaded', () => {
             shadowSize: [41, 41]
         });
 
-        lottoStores.forEach(store => {
-            const markerOptions = store.firstPlace ? { icon: firstPlaceIcon } : {};
-            L.marker([store.lat, store.lng], markerOptions).addTo(map)
-                .bindPopup(`<b>${store.name}</b><br>${store.firstPlace ? '🏆 1등 배출점' : '일반 판매점'}`);
+        const firstPlaceStores = lottoStores.filter(store => store.wins.first.count > 0);
+
+        firstPlaceStores.forEach(store => {
+            const popupContent = `
+                <b>${store.name}</b><br>
+                ${store.address}<br><br>
+                <b>🏆 1등: ${store.wins.first.count}회</b> (최근: ${store.wins.first.dates[0] || 'N/A'})<br>
+                <b>🥈 2등: ${store.wins.second.count}회</b> (최근: ${store.wins.second.dates[0] || 'N/A'})<br>
+                <b>🥉 3등: ${store.wins.third.count}회</b> (최근: ${store.wins.third.dates[0] || 'N/A'})
+            `;
+            L.marker([store.lat, store.lng], { icon: firstPlaceIcon }).addTo(map)
+                .bindPopup(popupContent);
         });
     }
 
@@ -290,15 +306,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (typeof Chart === 'undefined') return;
         const labels = Object.keys(yearlyStats);
         const data = Object.values(yearlyStats);
-        const hotNumber = Object.keys(yearlyStats).reduce((a, b) => yearlyStats[a] > yearlyStats[b] ? a : b);
-        const coldNumber = Object.keys(yearlyStats).reduce((a, b) => yearlyStats[a] < yearlyStats[b] ? a : b);
-
-        const backgroundColors = labels.map(label => {
-            if (label === hotNumber) return 'rgba(255, 99, 132, 0.8)'; // Hot
-            if (label === coldNumber) return 'rgba(54, 162, 235, 0.8)'; // Cold
-            return 'rgba(0, 123, 255, 0.6)';
-        });
-        
         new Chart(statsChartCanvas, {
             type: 'bar',
             data: {
@@ -306,17 +313,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 datasets: [{
                     label: '출현 횟수',
                     data: data,
-                    backgroundColor: backgroundColors,
+                    backgroundColor: labels.map(num => getLottoColor(parseInt(num)))
                 }]
             },
             options: {
-                plugins: {
-                    legend: { display: false },
-                    title: { display: true, text: 'Hot & Cold Numbers' }
-                },
-                scales: {
-                    y: { beginAtZero: true }
-                }
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
             }
         });
     }
