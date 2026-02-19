@@ -4,9 +4,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const drawNumberEl = document.getElementById('draw-number');
     const countdownEl = document.getElementById('countdown');
     const lastDrawNumbersEl = document.getElementById('last-draw-numbers');
-    const prize1El = document.getElementById('prize-1');
-    const prize2El = document.getElementById('prize-2');
-    const prize3El = document.getElementById('prize-3');
+    const prize1PreTaxEl = document.getElementById('prize-1-pre-tax');
+    const prize1AfterTaxEl = document.getElementById('prize-1-after-tax');
+    const prize2PreTaxEl = document.getElementById('prize-2-pre-tax');
+    const prize2AfterTaxEl = document.getElementById('prize-2-after-tax');
+    const prize3PreTaxEl = document.getElementById('prize-3-pre-tax');
+    const prize3AfterTaxEl = document.getElementById('prize-3-after-tax');
     const includeNumbersEl = document.getElementById('include-numbers');
     const excludeNumbersEl = document.getElementById('exclude-numbers');
     const generateBtn = document.getElementById('generate-btn');
@@ -22,9 +25,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let generatedSets = [];
     let savedSets = JSON.parse(localStorage.getItem('lottoSets')) || [];
     let map;
-    let lottoStores = []; // This will be populated from the JSON file
+    let lottoStores = [];
 
-    // Placeholder data for the last draw - In a real app, this would be fetched from an API
+    // Placeholder data - In a real app, this would be fetched from an API
     let lastDrawData = {
         draw: 1130,
         numbers: [5, 11, 13, 19, 21, 33],
@@ -37,6 +40,12 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- LOTTERY DATA & LOGIC ---
+
+    function calculateTax(amount) {
+        if (amount <= 50000) return amount;
+        if (amount <= 300000000) return Math.floor(amount * 0.78);
+        return Math.floor(amount - ((amount - 300000000) * 0.33 + 300000000 * 0.22));
+    }
 
     const getLottoColor = (num) => {
         if (num <= 10) return '#fbc400'; // Yellow
@@ -171,7 +180,6 @@ document.addEventListener('DOMContentLoaded', () => {
         
         button.classList.toggle('selected');
 
-        // Prevent selecting the same number as both include and exclude
         const otherType = type === 'include' ? 'exclude' : 'include';
         const otherSelector = (otherType === 'include' ? includeNumbersEl : excludeNumbersEl);
         const otherButton = otherSelector.querySelector(`[data-number="${number}"]`);
@@ -234,7 +242,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- MAP ---
     async function initMap() {
-        // Default location (Seoul)
         map = L.map(mapEl).setView([37.5665, 126.9780], 13);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -243,7 +250,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         await fetchStores();
 
-        // Try to get user's location
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(position => {
                 const userLat = position.coords.latitude;
@@ -254,22 +260,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     .openPopup();
                 addStoreMarkers();
             }, () => {
-                addStoreMarkers(); // User denied or error
+                addStoreMarkers();
             });
         } else {
-            addStoreMarkers(); // Geolocation not supported
+            addStoreMarkers();
         }
     }
 
     async function fetchStores() {
         try {
             const response = await fetch('lotto-winning-stores.json');
-            if (!response.ok) {
-                throw new Error('네트워크 응답이 올바르지 않습니다.');
-            }
+            if (!response.ok) throw new Error('Network response was not ok.');
             lottoStores = await response.json();
         } catch (error) {
-            console.error('로또 판매점 데이터를 불러오는 데 실패했습니다:', error);
+            console.error('Failed to fetch lotto stores:', error);
             lottoStores = [];
         }
     }
@@ -298,7 +302,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 .bindPopup(popupContent);
         });
     }
-
 
     // --- MAIN STATS CHART ---
     const yearlyStats = { 1: 15, 2: 10, 3: 18, 4: 12, 5: 20, 6: 14, 7: 17, 8: 9, 9: 13, 10: 16, 11: 19, 12: 11, 13: 22, 14: 14, 15: 16, 16: 10, 17: 18, 18: 15, 19: 13, 20: 17, 21: 21, 22: 12, 23: 15, 24: 14, 25: 11, 26: 18, 27: 20, 28: 16, 29: 13, 30: 10, 31: 17, 32: 15, 33: 19, 34: 22, 35: 14, 36: 11, 37: 13, 38: 16, 39: 18, 40: 12, 41: 15, 42: 17, 43: 20, 44: 14, 45: 9 };
@@ -331,9 +334,13 @@ document.addEventListener('DOMContentLoaded', () => {
         drawNumberEl.textContent = `제 ${getCurrentDrawNumber()}회`;
         displayNumbers(lastDrawNumbersEl, lastDrawData.numbers);
         
-        prize1El.textContent = lastDrawData.prizes.first.toLocaleString();
-        prize2El.textContent = lastDrawData.prizes.second.toLocaleString();
-        prize3El.textContent = lastDrawData.prizes.third.toLocaleString();
+        // Prizes
+        prize1PreTaxEl.textContent = lastDrawData.prizes.first.toLocaleString();
+        prize1AfterTaxEl.textContent = calculateTax(lastDrawData.prizes.first).toLocaleString();
+        prize2PreTaxEl.textContent = lastDrawData.prizes.second.toLocaleString();
+        prize2AfterTaxEl.textContent = calculateTax(lastDrawData.prizes.second).toLocaleString();
+        prize3PreTaxEl.textContent = lastDrawData.prizes.third.toLocaleString();
+        prize3AfterTaxEl.textContent = calculateTax(lastDrawData.prizes.third).toLocaleString();
 
         setInterval(updateCountdown, 1000);
         updateCountdown();

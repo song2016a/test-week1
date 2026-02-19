@@ -54,11 +54,32 @@
                 </div>
                 <div class="last-winning-prizes">
                     <h3>지난 회차 당첨금액</h3>
-                    <ul id="prize-list">
-                        <li><strong>1등:</strong> <span id="prize-1">-</span> 원</li>
-                        <li><strong>2등:</strong> <span id="prize-2">-</span> 원</li>
-                        <li><strong>3등:</strong> <span id="prize-3">-</span> 원</li>
-                    </ul>
+                    <table class="prize-table">
+                        <thead>
+                            <tr>
+                                <th>등위</th>
+                                <th>세전 금액</th>
+                                <th>세후 실수령액</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>1등</strong></td>
+                                <td><span id="prize-1-pre-tax">-</span> 원</td>
+                                <td><span id="prize-1-after-tax">-</span> 원</td>
+                            </tr>
+                            <tr>
+                                <td><strong>2등</strong></td>
+                                <td><span id="prize-2-pre-tax">-</span> 원</td>
+                                <td><span id="prize-2-after-tax">-</span> 원</td>
+                            </tr>
+                            <tr>
+                                <td><strong>3등</strong></td>
+                                <td><span id="prize-3-pre-tax">-</span> 원</td>
+                                <td><span id="prize-3-after-tax">-</span> 원</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </section>
@@ -109,7 +130,7 @@
 
         <!-- Lotto Store Map -->
         <section class="container">
-            <h2>로또 명당</h2>
+            <h2>로또 1등 당첨 복권방</h2>
             <div id="map" style="height: 400px; margin-top: 20px;"></div>
         </section>
 
